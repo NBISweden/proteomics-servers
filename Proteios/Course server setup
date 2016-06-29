@@ -1,0 +1,20 @@
+First test ssh login to server (Ubuntu 14.04 LTS) using certificate. Then:
+1) Edit ansible_hosts
+2) Edit ansible cfg if new certificate
+3) Run ansible-playbook proteios-ansible.yml
+4) Check that you can log into proteios server as root
+5) Run ansible-playbook tandem-ansible.yml
+6) Run ansible-playbook featuredetection-ansible.yml
+7) Log into proteios server. 
+	a) List plugins. 
+	b) Create user bils (password 'bils').
+	c) Create user course (password 'course').
+8) Run ansible-playbook course-ansible.yml
+9) Log into host and run perl RegisterCourseMzMLProteios.pl
+10) Run ansible-playbook tmt-course-ansible.yml
+11) Log into host and run perl RegisterTMTCourseMzMLProteios.pl
+
+12) To enable front end proxy:
+	a) Start a bunch of Proteios servers from images to find their IPs
+	b) Edit the proxies.conf file
+	c) Run ansible-playbook proxy.yml

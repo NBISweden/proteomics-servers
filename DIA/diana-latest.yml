@@ -1,0 +1,118 @@
+---
+# This ansible script will configure a fresh Ubuntu 14.04 LTS server with the Diana version from Github 
+# The ruser variable needs to be set to the remote user. The installation will be made in the home folder of that user.
+ 
+- hosts: diana
+  vars:
+    ruser: ubuntu
+    rhome: "/home/{{ ruser }}"
+  remote_user: "{{ ruser }}"
+  tasks:
+  - name: upgrade
+    become: yes
+    become_method: sudo
+    apt: upgrade=dist update_cache=yes
+  - name: "Check hosts file"
+    lineinfile: dest=/etc/hosts line="{{ ansible_default_ipv4.address }} {{ ansible_hostname }} localhost" state=present
+    when: ansible_default_ipv4.address is defined
+    become: yes
+    become_method: sudo
+  - name: Check if a reboot is required
+    register: file
+    stat: path=/var/run/reboot-required get_md5=no
+  - name: Reboot the server
+    command: /sbin/reboot
+    become: yes
+    become_method: sudo
+    when: file.stat.exists == true
+  - name: Wait for server to restart
+    local_action:
+      module: wait_for
+        host={{ inventory_hostname }}
+        port=22
+        delay=1
+        timeout=300
+  - name: install python-pip
+    become: yes
+    become_method: sudo
+    apt: pkg=python-pip
+  - name: install python-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=python-dev
+
+  - name: add ppa java repository 
+    apt_repository: repo='ppa:openjdk-r/ppa'
+    become: yes
+    become_method: sudo
+  - name: ensure jdk 8 is installed
+    become: yes
+    become_method: sudo
+    apt: pkg=openjdk-8-jdk state=latest
+
+  - name: install nympy
+    become: yes
+    become_method: sudo
+    pip: name=numpy version=1.9.0
+  - name: install libblas-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libblas-dev
+  - name: install liblapack-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=liblapack-dev
+  - name: install gfortran
+    become: yes
+    become_method: sudo
+    apt: pkg=gfortran
+  - name: install scipy
+    become: yes
+    become_method: sudo
+    pip: name=scipy version=0.9.0
+  - name: install matplotlib
+    become: yes
+    become_method: sudo
+    apt: pkg=python-matplotlib
+  - name: install sklearn
+    become: yes
+    become_method: sudo
+    pip: name=scikit-learn version=0.17.1
+  - name: install pandas
+    become: yes
+    become_method: sudo
+    pip: name=pandas version=0.18.1
+  - name: install nose
+    become: yes
+    become_method: sudo
+    pip: name=nose
+  - name: install tornado
+    become: yes
+    become_method: sudo
+    pip: name=tornado
+
+  - name: install git
+    become: yes
+    become_method: sudo
+    apt: pkg=git
+  - git: repo=https://github.com/flevander/diana.git dest="{{ rhome }}/diana" force=yes
+  - git: repo=https://github.com/fickludd/pyprophet.git dest="{{ rhome }}/pyprophet"
+  - lineinfile: dest="{{ rhome }}/.bashrc" line="export PATH=$PATH:~/bin/diana/bin"
+  - lineinfile: dest="{{ rhome }}/.bashrc" line="export PYTHONPATH=~/bin/pyprophet/lib/python2.7/site-packages"
+  - lineinfile: dest="{{ rhome }}/.bashrc" line="export DIANA_DIR=~/bin/diana"
+  - file: path="{{ rhome }}/bin/diana" state=directory
+  - file: path="{{ rhome }}/bin/pyprophet/lib/python2.7/site-packages" state=directory
+  - command: python setup.py install --prefix=~/bin/pyprophet
+    environment:
+      PYTHONPATH: "{{ rhome }}/bin/pyprophet/lib/python2.7/site-packages"
+    args:
+      chdir: "{{ rhome }}/pyprophet"
+      creates: "{{ rhome }}/bin/pyprophet/bin/pyprophet"
+  - stat: path="{{ rhome }}/bin/diana/bin"
+    register: diana_binaries
+  - command: mv "{{ rhome }}/diana/diana/bin" "{{ rhome }}/bin/diana"
+    when: diana_binaries.stat.exists == False
+  - file:
+     path: "{{ rhome }}/bin/diana/bin"
+     mode: u+x
+     recurse: yes

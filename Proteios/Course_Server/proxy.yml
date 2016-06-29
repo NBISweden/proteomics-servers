@@ -1,0 +1,52 @@
+---
+- hosts: proteios
+  vars:
+    http_port: 80
+    max_clients: 200
+    mysql_root_pass: testing
+  remote_user: ubuntu
+  tasks:
+  - name: ensure apache mod proxy is installed
+    become: yes
+    become_method: sudo
+    apache2_module: state=present name=proxy_http
+  - name: Configure apache2
+    copy: src=/home/bils/proxies.conf dest=/etc/apache2/sites-enabled/proxies.conf
+    become: yes
+    become_method: sudo 
+  - lineinfile: dest=/etc/apache2/ports.conf line="Listen 8081" state=present insertafter="Listen 80"
+    become: yes
+    become_method: sudo
+  - lineinfile: dest=/etc/apache2/ports.conf line="Listen 8082" state=present insertafter="Listen 8081"
+    become: yes
+    become_method: sudo
+  - lineinfile: dest=/etc/apache2/ports.conf line="Listen 8083" state=present insertafter="Listen 8082"
+    become: yes
+    become_method: sudo
+  - lineinfile: dest=/etc/apache2/ports.conf line="Listen 8084" state=present insertafter="Listen 8083"
+    become: yes
+    become_method: sudo
+  - lineinfile: dest=/etc/apache2/ports.conf line="Listen 8085" state=present insertafter="Listen 8084"
+    become: yes
+    become_method: sudo
+  - lineinfile: dest=/etc/apache2/ports.conf line="Listen 8086" state=present insertafter="Listen 8085"
+    become: yes
+    become_method: sudo
+  - lineinfile: dest=/etc/apache2/ports.conf line="Listen 8087" state=present insertafter="Listen 8086"
+    become: yes
+    become_method: sudo
+  - lineinfile: dest=/etc/apache2/ports.conf line="Listen 8088" state=present insertafter="Listen 8087"
+    become: yes
+    become_method: sudo
+  - lineinfile: dest=/etc/apache2/ports.conf line="Listen 8089" state=present insertafter="Listen 8088"
+    become: yes
+    become_method: sudo
+  - lineinfile: dest=/etc/apache2/ports.conf line="Listen 8090" state=present insertafter="Listen 8089"
+    become: yes
+    become_method: sudo
+  - name: Restart apache2
+    become: yes
+    become_method: sudo
+    service: name=apache2 state=restarted
+    
+

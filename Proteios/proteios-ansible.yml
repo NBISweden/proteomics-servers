@@ -1,0 +1,115 @@
+---
+- hosts: proteios
+  vars:
+    http_port: 80
+    max_clients: 200
+    mysql_root_pass: testing
+  remote_user: ubuntu
+  tasks:
+  - name: upgrade
+    become: yes
+    become_method: sudo
+    apt: upgrade=dist update_cache=yes
+  - name: "Check hosts file"
+    lineinfile: dest=/etc/hosts line="{{ ansible_default_ipv4.address }} {{ ansible_hostname }} localhost" state=present
+    when: ansible_default_ipv4.address is defined
+    become: yes
+    become_method: sudo
+  - name: Check if a reboot is required
+    register: file
+    stat: path=/var/run/reboot-required get_md5=no
+  - name: Reboot the server
+    command: /sbin/reboot
+    become: yes
+    become_method: sudo
+    when: file.stat.exists == true
+  - name: Wait for server to restart
+    local_action:
+      module: wait_for
+        host={{ inventory_hostname }}
+        port=22
+        delay=1
+        timeout=300
+
+  - name: ensure jdk 7 is installed
+    become: yes
+    become_method: sudo
+    apt: pkg=openjdk-7-jdk state=latest
+  - name: install expect
+    become: yes
+    become_method: sudo
+    apt: pkg=expect
+  - name: install tomcat7
+    become: yes
+    become_method: sudo
+    apt: pkg=tomcat7 state=latest
+  - name: install subversion
+    become: yes
+    become_method: sudo
+    apt: pkg=subversion
+  - name: install ant
+    become: yes
+    become_method: sudo
+    apt: pkg=ant
+
+  - name: Set MySQL root password before installing
+    become: yes
+    become_method: sudo
+    debconf: name='mysql-server' question='mysql-server/root_password' value='{{mysql_root_pass | quote}}' vtype='password'
+  - name: Confirm MySQL root password before installing
+    become: yes
+    become_method: sudo
+    debconf: name='mysql-server' question='mysql-server/root_password_again' value='{{mysql_root_pass | quote}}' vtype='password'
+  - name: Install mysql
+    become: yes
+    become_method: sudo
+    apt: pkg=mysql-server
+  - name: get Proteios from SVN
+    # Checkout subversion repository to specified folder.
+    subversion: repo=http://www.proteios.org/svn/trunk/ dest=/home/ubuntu/proteios force=yes
+  - name: Assures Proteios dirs exists
+    become: yes
+    become_method: sudo
+    file: path=/home/proteios state=directory owner=tomcat7
+    file: path=/home/proteios/files state=directory owner=tomcat7
+    file: path=/home/proteios/tmp state=directory owner=tomcat7 
+  - name: Build Proteios
+    command: ant package chdir=/home/ubuntu/proteios
+  - name: Configure Proteios
+    replace: dest=/home/ubuntu/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=tomcat6 replace=tomcat7
+  - replace: dest=/home/ubuntu/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=/var/proteios/files replace=/home/proteios/files
+  - replace: dest=/home/ubuntu/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=/tmp/proteios replace=/home/proteios/tmp
+  - stat: path=/var/lib/tomcat7/webapps/proteios
+    register: proteios_installation_exists
+  - name: New Proteios install
+    command: ./install.sh
+    when: proteios_installation_exists.stat.exists == False
+    become: yes
+    become_method: sudo
+    args:
+      chdir: /home/ubuntu/proteios/dist/ProteiosSE-2.20.0-dev/
+  - name: Proteios installation update
+    command: ./install.sh --force
+    become: yes
+    become_method: sudo
+    when: proteios_installation_exists.stat.exists == True
+    args:
+      chdir: /home/ubuntu/proteios/dist/ProteiosSE-2.20.0-dev/
+  - name: Init proteios
+    when: proteios_installation_exists.stat.exists == False
+    script: init.expect
+    become: yes
+    become_method: sudo
+  - name: Update proteios
+    when: proteios_installation_exists.stat.exists == True
+    script: update.expect
+    become: yes
+    become_method: sudo
+  - name: Configure tomcat memory
+    become: yes
+    become_method: sudo
+    replace: dest=/etc/default/tomcat7 regexp=Xmx128m replace="Xmx3G -Djava.security.egd=file:/dev/./urandom" 
+  - name: Restart tomcat
+    become: yes
+    become_method: sudo
+    service: name=tomcat7 state=restarted 

@@ -1,0 +1,79 @@
+---
+- hosts: proteios
+  vars:
+    http_port: 80
+    max_clients: 200
+    mysql_root_pass: testing
+  remote_user: ubuntu
+  tasks:
+  - name: ensure apache2 is installed
+    become: yes
+    become_method: sudo
+    apt: pkg=apache2 state=latest
+  - name: ensure libwww is installed
+    become: yes
+    become_method: sudo
+    apt: pkg=libwww-perl
+  - name: Assure database dirs exists
+    become: yes
+    become_method: sudo
+    file: path=/home/databases state=directory
+  - name: Copy database file
+    get_url: url=http://webdav.swegrid.se/snic/bils/lu_proteomics/pub/server/db.fasta dest=/home/databases/S_cerevisiae_rnd_sp_20091020.fasta
+    become: yes
+    become_method: sudo
+
+#  - stat: path=/home/ubuntu/gpm.tgz
+#    register: tandem_archive_exists
+#  - name: Upload tandem
+#    when: tandem_archive_exists.stat.exists == False
+#    copy: src=/home/bils/gpm.tgz dest=/home/ubuntu/gpm.tgz
+  - stat: path=/srv/www/thegpm
+    register: serverfolders
+  - name: Assure base dir exist
+    become: yes
+    become_method: sudo
+    file: path=/srv/www state=directory
+  - name: Download GPM
+    when: serverfolders.stat.exists == False
+    get_url: url=http://webdav.swegrid.se/snic/bils/lu_proteomics/pub/server/gpm.tgz dest=/home/ubuntu/gpm.tgz
+  - name: Uncompress archive
+    unarchive: src=/home/ubuntu/gpm.tgz dest=/srv/www owner=www-data group=www-data
+    become: yes
+    become_method: sudo
+    when: serverfolders.stat.exists == False     
+  - name: Configure apache2
+    copy: src=/home/bils/tandem_apache.conf dest=/etc/apache2/sites-enabled/tandem.conf
+    become: yes
+    become_method: sudo 
+  - name: Remove default
+    file: path=/etc/apache2/sites-enabled/000-default.conf state=absent
+    become: yes
+    become_method: sudo
+  - name: Enable cgi
+    apache2_module: state=present name=cgi
+    become: yes
+    become_method: sudo
+  - name: Restart apache
+    become: yes
+    become_method: sudo
+    service: name=apache2 state=restarted
+  - name: Configure Proteios
+    become: yes
+    become_method: sudo
+    replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/xtandem.properties regexp="^xtandem\.gpm\.server\.url = .*" replace="xtandem.gpm.server.url = http://localhost"
+  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/xtandem.properties regexp="^xtandem\.gpm\.result\.filename\.prefix = GPM777" replace="xtandem.gpm.result.filename.prefix = GPM"
+    become: yes
+    become_method: sudo    
+  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/xtandem.properties regexp="^xtandem\.gpm\.server\.timediff\.hours = -9" replace="xtandem.gpm.server.timediff.hours = 0"
+    become: yes
+    become_method: sudo
+  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/xtandem.properties regexp="^xtandem\.local\.disabled = yes" replace="xtandem.local.disabled = no"
+    become: yes
+    become_method: sudo
+  - name: Restart tomcat
+    become: yes
+    become_method: sudo
+    service: name=tomcat7 state=restarted
+    
+

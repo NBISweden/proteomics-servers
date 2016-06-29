@@ -1,0 +1,23 @@
+---
+- hosts: proteios
+  vars:
+    http_port: 80
+    max_clients: 200
+    mysql_root_pass: testing
+  remote_user: ubuntu
+  tasks:
+  - stat: path=/srv/www/thegpm/files/Yeast_EtOH1.mgf.gz
+    register: course_files
+  - name: Download
+    when: course_files.stat.exists == False
+    get_url: url=http://webdav.swegrid.se/snic/bils/lu_proteomics/pub/server/coursefiles.tar dest=/home/ubuntu/coursefiles.tar
+  - name: Uncompress archive
+    unarchive: src=/home/ubuntu/coursefiles.tar dest=/srv/www/thegpm copy=no owner=www-data
+    become: yes
+    become_method: sudo
+    when: course_files.stat.exists == False
+  - file: path=/home/ubuntu/coursefiles.tar state=absent
+  - copy: src=RegisterCourseMzMLProteios.pl dest=/home/ubuntu/RegisterCourseMzMLProteios.pl mode=og+x
+ 
+
+    

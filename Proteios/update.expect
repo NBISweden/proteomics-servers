@@ -1,0 +1,9 @@
+#!/usr/bin/expect
+cd /var/lib/tomcat7/webapps/proteios/WEB-INF/
+spawn ./init.sh
+
+expect "Proteios SE password for root: "
+send "protroot\r"
+
+set timeout 800
+expect eof

@@ -1,0 +1,12 @@
+#!/usr/bin/expect
+cd /var/lib/tomcat7/webapps/proteios/WEB-INF/
+spawn ./init.sh
+
+expect "Mysql password for user root: "
+send "testing\r"
+
+expect "Proteios SE password for root: "
+send "protroot\r"
+
+set timeout 800
+expect eof
