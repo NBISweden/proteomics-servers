@@ -17,7 +17,7 @@
     become_method: sudo
     when: course_files.stat.exists == False
   - file: path=/home/ubuntu/coursefiles.tar state=absent
-  - copy: RegisterCourseMzMLProteios.pl dest=/home/ubuntu/RegisterCourseMzMLProteios.pl mode=u+x
+  - copy: src=RegisterCourseMzMLProteios.pl dest=/home/ubuntu/RegisterCourseMzMLProteios.pl mode=u+x
   - command: /home/ubuntu/RegisterCourseMzMLProteios.pl
  
 
