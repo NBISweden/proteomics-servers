@@ -21,7 +21,8 @@
     become_method: sudo
     when: course_files.stat.exists == False
   - file: path=/home/ubuntu/YeastTMT_course.zip state=absent
-  - copy: src=RegisterTMTCourseMzMLProteios.pl dest=/home/ubuntu/RegisterTMTCourseMzMLProteios.pl mode=og+x
+  - copy: src=RegisterTMTCourseMzMLProteios.pl dest=/home/ubuntu/RegisterTMTCourseMzMLProteios.pl mode=u+x
+  - command: /home/ubuntu/RegisterTMTCourseMzMLProteios.pl
  
 
     
