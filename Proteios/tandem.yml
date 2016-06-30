@@ -38,7 +38,7 @@
     when: serverfolders.stat.exists == False
     get_url: url=http://webdav.swegrid.se/snic/bils/lu_proteomics/pub/server/gpm.tgz dest=/home/ubuntu/gpm.tgz
   - name: Uncompress archive
-    unarchive: src=/home/ubuntu/gpm.tgz dest=/srv/www owner=www-data group=www-data
+    unarchive: src=/home/ubuntu/gpm.tgz dest=/srv/www copy=no owner=www-data group=www-data
     become: yes
     become_method: sudo
     when: serverfolders.stat.exists == False     
