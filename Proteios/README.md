@@ -23,11 +23,14 @@ Done!
 If you want to install a Proteios course server, proceed with the instructions and scripts in the Course_Server subfolder.
 
 If you want to add a custom database to the Proteios server:
- 1 First ensure that the database fasta file contains an equal amount of decoy entries which have an `r` prefix. Target entries should thus not have accessions starting with `r`.  
- 2 Place the database fasta file in the same folder as the scripts.
- 3 Edit `add_database.yml` with the fasta file name, and a short name (without whitespace) to appear in the database selection interface. For example:
-> database_file_name: swissprot_human_rev_20160606.fasta
-> database_name: sp_human_rev
- 4 Run `ansible-playbook add_database.yml`.
+
+ 1. First ensure that the database fasta file contains an equal amount of decoy entries which have an `r` prefix. Target entries should thus not have accessions starting with `r`.  
+ 2. Place the database fasta file in the same folder as the scripts.
+ 3. Edit `add_database.yml` with the fasta file name, and a short name (without whitespace) to appear in the database selection interface. For example:
+```
+database_file_name: swissprot_human_rev_20160606.fasta
+database_name: sp_human_rev
+```
+ 4. Run `ansible-playbook add_database.yml`.
 
 If you want to update your Proteios server with the latest patches and latest version of Proteios, just rerun `ansible-playbook proteios-ansible.yml` anytime.
