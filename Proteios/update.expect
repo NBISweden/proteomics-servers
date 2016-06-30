@@ -1,6 +1,6 @@
 #!/usr/bin/expect
 cd /var/lib/tomcat7/webapps/proteios/WEB-INF/
-spawn ./init.sh
+spawn ./update.sh
 
 expect "Proteios SE password for root: "
 send "protroot\r"
