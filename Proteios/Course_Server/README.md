@@ -1,6 +1,7 @@
-# Ansible scripts for installing course exercises on a Proteios server
+# Ansible scripts for installing course exercises on a Proteios SE server
+You'll also need ansible_hosts and ansible.cfg from the Proteios folder.
 
-1. Log into you new proteios server (http://SERVER:8080/proteios/app) using a web browser . 	
+1. Log into you new proteios server (http://SERVER:8080/proteios/app) using a web browser . 
   * Create user bils (password 'bils').
   * Create user course (password 'course').
 2. Run ansible-playbook course-ansible.yml
