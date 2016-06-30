@@ -1,0 +1,18 @@
+---
+- hosts: proteios
+  vars:
+   database_file_name: FASTA_FILENAME
+   database_name: DATABASE_NAME
+   species_file_name: species.js         # Change to pro_species.js for prokaryotes.   
+  tasks:
+  - copy: src={{ database_file_name }} dest=/home/databases mode=oug+r
+    become: yes
+    become_method: sudo
+  - name: Configure X!Tandem taxonomy file
+    become: yes
+    become_method: sudo
+    lineinfile: dest=/srv/www/thegpm/tandem/taxonomy.xml insertbefore="<\/bioml>" line="<taxon label=\"{{ database_name }}\"><file format=\"peptide\" URL=\"/home/databases/{{ database_file_name }}\"/></taxon>"
+  - name: Configure X!Tandem species file
+    become: yes
+    become_method: sudo
+    lineinfile: dest="/srv/www/thegpm/tandem/{{ species_file_name }}" line="document.writeln(\"<option value=\\\"{{ database_name }}\\\">{{ database_name }}</option>\");"

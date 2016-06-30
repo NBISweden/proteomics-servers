@@ -1,10 +1,5 @@
 ---
 - hosts: proteios
-  vars:
-    http_port: 80
-    max_clients: 200
-    mysql_root_pass: testing
-  remote_user: ubuntu
   tasks:
   - name: ensure apache2 is installed
     become: yes
@@ -22,12 +17,6 @@
     get_url: url=http://webdav.swegrid.se/snic/bils/lu_proteomics/pub/server/db.fasta dest=/home/databases/S_cerevisiae_rnd_sp_20091020.fasta
     become: yes
     become_method: sudo
-
-#  - stat: path=/home/ubuntu/gpm.tgz
-#    register: tandem_archive_exists
-#  - name: Upload tandem
-#    when: tandem_archive_exists.stat.exists == False
-#    copy: src=/home/bils/gpm.tgz dest=/home/ubuntu/gpm.tgz
   - stat: path=/srv/www/thegpm
     register: serverfolders
   - name: Assure base dir exist
@@ -36,9 +25,9 @@
     file: path=/srv/www state=directory
   - name: Download GPM
     when: serverfolders.stat.exists == False
-    get_url: url=http://webdav.swegrid.se/snic/bils/lu_proteomics/pub/server/gpm.tgz dest=/home/ubuntu/gpm.tgz
+    get_url: url=http://webdav.swegrid.se/snic/bils/lu_proteomics/pub/server/gpm.tgz dest=/home/{{ ansible_ssh_user }}/gpm.tgz
   - name: Uncompress archive
-    unarchive: src=/home/ubuntu/gpm.tgz dest=/srv/www copy=no owner=www-data group=www-data
+    unarchive: src=/home/{{ ansible_ssh_user }}/gpm.tgz dest=/srv/www copy=no owner=www-data group=www-data
     become: yes
     become_method: sudo
     when: serverfolders.stat.exists == False     

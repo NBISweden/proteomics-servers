@@ -1,10 +1,7 @@
 ---
 - hosts: proteios
   vars:
-    http_port: 80
-    max_clients: 200
-    mysql_root_pass: testing
-  remote_user: ubuntu
+   mysql_root_pass: testing
   tasks:
   - name: upgrade
     become: yes
@@ -66,7 +63,7 @@
     apt: pkg=mysql-server
   - name: get Proteios from SVN
     # Checkout subversion repository to specified folder.
-    subversion: repo=http://www.proteios.org/svn/trunk/ dest=/home/ubuntu/proteios force=yes
+    subversion: repo=http://www.proteios.org/svn/trunk/ dest=/home/{{ ansible_ssh_user }}/proteios force=yes
   - name: Assures Proteios dirs exists
     become: yes
     become_method: sudo
@@ -74,11 +71,11 @@
     file: path=/home/proteios/files state=directory owner=tomcat7
     file: path=/home/proteios/tmp state=directory owner=tomcat7 
   - name: Build Proteios
-    command: ant package chdir=/home/ubuntu/proteios
+    command: ant package chdir=/home/{{ ansible_ssh_user }}/proteios
   - name: Configure Proteios
-    replace: dest=/home/ubuntu/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=tomcat6 replace=tomcat7
-  - replace: dest=/home/ubuntu/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=/var/proteios/files replace=/home/proteios/files
-  - replace: dest=/home/ubuntu/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=/tmp/proteios replace=/home/proteios/tmp
+    replace: dest=/home/{{ ansible_ssh_user }}/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=tomcat6 replace=tomcat7
+  - replace: dest=/home/{{ ansible_ssh_user }}/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=/var/proteios/files replace=/home/proteios/files
+  - replace: dest=/home/{{ ansible_ssh_user }}/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=/tmp/proteios replace=/home/proteios/tmp
   - stat: path=/var/lib/tomcat7/webapps/proteios
     register: proteios_installation_exists
   - name: New Proteios install
@@ -87,14 +84,14 @@
     become: yes
     become_method: sudo
     args:
-      chdir: /home/ubuntu/proteios/dist/ProteiosSE-2.20.0-dev/
+      chdir: /home/{{ ansible_ssh_user }}/proteios/dist/ProteiosSE-2.20.0-dev/
   - name: Proteios installation update
     command: ./install.sh --force
     become: yes
     become_method: sudo
     when: proteios_installation_exists.stat.exists == True
     args:
-      chdir: /home/ubuntu/proteios/dist/ProteiosSE-2.20.0-dev/
+      chdir: /home/{{ ansible_ssh_user }}/proteios/dist/ProteiosSE-2.20.0-dev/
   - name: Init proteios
     when: proteios_installation_exists.stat.exists == False
     script: init.expect

@@ -1,28 +1,23 @@
 ---
 - hosts: proteios
-  vars:
-    http_port: 80
-    max_clients: 200
-    mysql_root_pass: testing
-  remote_user: ubuntu
   tasks:
   - stat: path=/srv/www/thegpm/files/090902_YeastTMT_FR04.mzData
     register: course_files
   - name: Download
     when: course_files.stat.exists == False
-    get_url: url=http://webdav.swegrid.se/snic/bils/lu_proteomics/pub/server/YeastTMT_course.zip dest=/home/ubuntu/YeastTMT_course.zip
+    get_url: url=http://webdav.swegrid.se/snic/bils/lu_proteomics/pub/server/YeastTMT_course.zip dest=/home/{{ ansible_ssh_user }}/YeastTMT_course.zip
   - name: install unzip
     become: yes
     become_method: sudo
     apt: pkg=unzip
   - name: Uncompress archive
-    unarchive: src=/home/ubuntu/YeastTMT_course.zip dest=/srv/www/thegpm/files copy=no owner=www-data
+    unarchive: src=/home/{{ ansible_ssh_user }}/YeastTMT_course.zip dest=/srv/www/thegpm/files copy=no owner=www-data
     become: yes
     become_method: sudo
     when: course_files.stat.exists == False
-  - file: path=/home/ubuntu/YeastTMT_course.zip state=absent
-  - copy: src=RegisterTMTCourseMzMLProteios.pl dest=/home/ubuntu/RegisterTMTCourseMzMLProteios.pl mode=u+x
-  - command: /home/ubuntu/RegisterTMTCourseMzMLProteios.pl
+  - file: path=/home/{{ ansible_ssh_user }}/YeastTMT_course.zip state=absent
+  - copy: src=RegisterTMTCourseMzMLProteios.pl dest=/home/{{ ansible_ssh_user }}/RegisterTMTCourseMzMLProteios.pl mode=u+x
+  - command: /home/{{ ansible_ssh_user }}/RegisterTMTCourseMzMLProteios.pl
  
 
     

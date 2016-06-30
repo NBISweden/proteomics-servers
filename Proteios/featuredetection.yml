@@ -1,10 +1,5 @@
 ---
 - hosts: proteios
-  vars:
-    http_port: 80
-    max_clients: 200
-    mysql_root_pass: testing
-  remote_user: ubuntu
   tasks:
   - name: dinosaur file
     get_url: url=https://github.com/fickludd/dinosaur/releases/download/1.1.3/Dinosaur-1.1.3.free.jar dest=/home/proteios/Dinosaur-1.1.3.jar mode=u+x owner=tomcat7
