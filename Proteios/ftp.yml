@@ -1,0 +1,19 @@
+---
+- hosts: proteios
+  tasks:
+  - name: Assures proteios ftp log file exists
+    become: yes
+    become_method: sudo
+    file: path=/usr/share/tomcat7/nohup.out owner=tomcat7
+  - name: Tomcat7 user configuration
+    replace: dest=/etc/passwd regexp="tomcat7\:\/bin\/false" replace="tomcat7/:/bin/bash"
+    become: yes
+    become_method: sudo
+  - name: Script update
+    replace: dest=/etc/passwd regexp="\/bin\/sh" replace="/bin/bash"
+    become: yes
+    become_method: sudo
+  - name: Start ftp
+    command: /etc/init.d/proteios_ftp_server.sh restart
+    become: yes
+    become_method: sudo
