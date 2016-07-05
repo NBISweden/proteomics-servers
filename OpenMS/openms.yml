@@ -1,0 +1,130 @@
+# Requires ansible 2.0 or later
+---
+- hosts: proteios
+  tasks:
+  - name: Download OpenMS bundle
+    get_url: url=https://github.com/OpenMS/OpenMS/archive/Release2.0.1.tar.gz dest="/home/{{ ansible_ssh_user }}/OpenMS2.01.tar.gz"
+  - file: path="/home/{{ ansible_ssh_user }}/openms/" state=directory
+  - name: Uncompress archive
+    unarchive: src="/home/{{ ansible_ssh_user }}/OpenMS2.01.tar.gz" dest="/home/{{ ansible_ssh_user }}/openms/" copy=no
+# Build dependencies
+# sudo apt-get install cmake g++ autoconf qt4-dev-tools patch libtool make git \
+#      libqt4-core libqt4-dev libqt4-gui libqt4-opengl-dev automake libqtwebkit-dev
+  - name: Install cmake
+    become: yes
+    become_method: sudo
+    apt: pkg=cmake
+  - name: Install g++
+    become: yes
+    become_method: sudo
+    apt: pkg=g++
+  - name: Install autoconf
+    become: yes
+    become_method: sudo
+    apt: pkg=autoconf
+  - name: Install qt4-dev-tools
+    become: yes
+    become_method: sudo
+    apt: pkg=qt4-dev-tools
+  - name: Install patch
+    become: yes
+    become_method: sudo
+    apt: pkg=patch
+  - name: Install libtool
+    become: yes
+    become_method: sudo
+    apt: pkg=libtool 
+  - name: Install make
+    become: yes
+    become_method: sudo
+    apt: pkg=make
+  - name: Install git
+    become: yes
+    become_method: sudo
+    apt: pkg=git
+  - name: Install libqt4-core
+    become: yes
+    become_method: sudo
+    apt: pkg=libqt4-core
+  - name: Install libqt4-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libqt4-dev
+  - name: Install libqt4-opengl-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libqt4-opengl-dev
+  - name: Install automake
+    become: yes
+    become_method: sudo
+    apt: pkg=automake
+  - name: Install libqtwebkit-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libqtwebkit-dev
+#    sudo apt-get install libboost-regex-dev libboost-iostreams-dev libboost-date-time-dev libboost-math-dev \
+#     libsvm-dev libglpk-dev libzip-dev zlib1g-dev libxerces-c-dev libbz2-dev
+  - name: Install libboost-regex-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libboost-regex-dev
+  - name: Install libboost-iostreams-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libboost-iostreams-dev
+  - name: Install libboost-date-time-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libboost-date-time-dev
+  - name: Install libboost-math-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libboost-math-dev
+  - name: Install libsvm-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libsvm-dev
+  - name: Install libglpk-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libglpk-dev
+  - name: Install libzip-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libzip-dev 
+  - name: Install zlib1g-dev 
+    become: yes
+    become_method: sudo
+    apt: pkg=zlib1g-dev
+  - name: Install libxerces-c-dev 
+    become: yes
+    become_method: sudo
+    apt: pkg=libxerces-c-dev
+  - name: Install libbz2-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libbz2-dev
+# Now build
+  - file: path="/home/{{ ansible_ssh_user }}/openms/" state=directory
+  - file: path="/home/{{ ansible_ssh_user }}/openms/contrib-build" state=directory
+  - git: repo=https://github.com/OpenMS/contrib.git dest="/home/{{ ansible_ssh_user }}/openms/contrib" force=yes
+  - command: cmake -DBUILD_TYPE=SEQAN ../contrib chdir="/home/{{ ansible_ssh_user }}/openms/contrib-build" creates=/home/{{ ansible_ssh_user }}/openms/contrib-build/include/seqan
+  - command: cmake -DBUILD_TYPE=WILDMAGIC ../contrib chdir="/home/{{ ansible_ssh_user }}/openms/contrib-build" creates=/home/{{ ansible_ssh_user }}/openms/contrib-build/include/WildMagic
+  - command: cmake -DBUILD_TYPE=EIGEN ../contrib chdir="/home/{{ ansible_ssh_user }}/openms/contrib-build" creates=/home/{{ ansible_ssh_user }}/openms/contrib-build/include/eigen3
+  - file: path="/home/{{ ansible_ssh_user }}/openms/OpenMS-build" state=directory 
+#   cmake -DCMAKE_PREFIX_PATH="/PATH/TO/contrib-build;/usr;/usr/local" -DBOOST_USE_STATIC=OFF ../OpenMS
+  - command: cmake -DCMAKE_PREFIX_PATH="/home/{{ ansible_ssh_user }}/openms/contrib-build" -DBOOST_USE_STATIC=OFF ../OpenMS-Release2.0.1 chdir="/home/{{ ansible_ssh_user }}/openms/OpenMS-build" creates="/home/{{ ansible_ssh_user }}/openms/OpenMS-build/bin/TOPPView"
+  - command: make chdir="/home/{{ ansible_ssh_user }}/openms/OpenMS-build"
+  - lineinfile: dest="/home/{{ ansible_ssh_user }}/.bashrc" line="export LD_LIBRARY_PATH=\"/home/{{ ansible_ssh_user }}/openms/OpenMS-build/lib:$LD_LIBRARY_PATH\""
+  - lineinfile: dest="/home/{{ ansible_ssh_user }}/.bashrc" line="export PATH=$PATH:/home/{{ ansible_ssh_user }}/openms/OpenMS-build/bin"
+# Activate in Proteios if existing
+  - stat: path="/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/openms.properties"
+    register: proteios_installation
+  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/openms.properties regexp="^msgfplus\.local\.disabled = yes" replace="openms.local.disabled = no"
+    become: yes
+    become_method: sudo
+    when: proteios_installation.stat.exists == True 
+  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/openms.properties regexp="^msgfplus\.local\.install\.path = /usr/bin" replace="msgfplus.local.install.path = /home/{{ ansible_ssh_user }}/openms/OpenMS-build/bin"
+    become: yes
+    become_method: sudo
+    when: proteios_installation.stat.exists == True 

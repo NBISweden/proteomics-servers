@@ -15,7 +15,8 @@ Then:
 4. Check that you can log into proteios server as root (http://SERVER:8080/proteios/app) using a web browser.
 5. Run: `ansible-playbook tandem.yml`
 6. Run: `ansible-playbook featuredetection.yml`
-7. Log into you new proteios server (http://SERVER:8080/proteios/app) using a web browser. 
+7. Run: `ansible-playbook msgfplus.yml`
+8. Log into you new proteios server (http://SERVER:8080/proteios/app) using a web browser. 
   * List plugins to activate them (View->Plugins). 
   * Create users
 

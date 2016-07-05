@@ -1,0 +1,24 @@
+# Requires ansible 2.0 or later
+---
+- hosts: proteios
+  tasks:
+  - name: Download MSGFPlus bundle
+    get_url: url=https://omics.pnl.gov/sites/default/files/MSGFPlus.20160629.zip dest=/home/{{ ansible_ssh_user }}/MSGFPlus.20160629.zip
+  - file: path=/home/{{ ansible_ssh_user }}/msgfplus/ state=directory
+  - file: path=/home/databases/ state=directory owner=tomcat7 
+    become: yes
+    become_method: sudo
+  - name: Unzip archive
+    unarchive: src=/home/{{ ansible_ssh_user }}/MSGFPlus.20160629.zip dest=/home/{{ ansible_ssh_user }}/msgfplus/ copy=no
+  - name: MSGFPlus jar
+    become: yes
+    become_method: sudo
+    copy: src=/home/{{ ansible_ssh_user }}/msgfplus/MSGFPlus.jar dest=/home/proteios/ mode=u+rx owner=tomcat7 remote_src=True
+  - name: Default modification file
+    copy: src=/home/{{ ansible_ssh_user }}/msgfplus/MSGFPlus_Mods1.txt dest=/home/proteios/ mode=u+r owner=tomcat7 remote_src=True
+    become: yes
+  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/msgfplus.properties regexp="^msgfplus\.local\.disabled = yes" replace="msgfplus.local.disabled = no"
+  - replace:  dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/msgfplus.properties regexp="^msgfplus\.local\.program\.name = MSGFplus\.jar" replace="msgfplus.local.program.name = MSGFPlus.jar"
+    become: yes
+    become_method: sudo
+
