@@ -121,11 +121,11 @@
 # Activate in Proteios if existing
   - stat: path="/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/openms.properties"
     register: proteios_installation
-  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/openms.properties regexp="^msgfplus\.local\.disabled = yes" replace="openms.local.disabled = no"
+  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/openms.properties regexp="^openms\.local\.disabled = yes" replace="openms.local.disabled = no"
     become: yes
     become_method: sudo
     when: proteios_installation.stat.exists == True 
-  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/openms.properties regexp="^msgfplus\.local\.install\.path = /usr/bin" replace="msgfplus.local.install.path = /home/{{ ansible_ssh_user }}/openms/OpenMS-build/bin"
+  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/openms.properties regexp="^openms\.local\.install\.path = /usr/bin" replace="openms.local.install.path = /home/{{ ansible_ssh_user }}/openms/OpenMS-build/bin"
     become: yes
     become_method: sudo
     when: proteios_installation.stat.exists == True 
