@@ -114,7 +114,8 @@
   - file: path="/home/{{ ansible_ssh_user }}/openms/OpenMS-build" state=directory 
 #   cmake -DCMAKE_PREFIX_PATH="/PATH/TO/contrib-build;/usr;/usr/local" -DBOOST_USE_STATIC=OFF ../OpenMS
   - command: cmake -DCMAKE_PREFIX_PATH="/home/{{ ansible_ssh_user }}/openms/contrib-build" -DBOOST_USE_STATIC=OFF ../OpenMS-Release2.0.1 chdir="/home/{{ ansible_ssh_user }}/openms/OpenMS-build" creates="/home/{{ ansible_ssh_user }}/openms/OpenMS-build/bin/TOPPView"
-  - command: make chdir="/home/{{ ansible_ssh_user }}/openms/OpenMS-build"
+  - name: Building OpenMS - please be patient! 
+    command: make chdir="/home/{{ ansible_ssh_user }}/openms/OpenMS-build"
   - lineinfile: dest="/home/{{ ansible_ssh_user }}/.bashrc" line="export LD_LIBRARY_PATH=\"/home/{{ ansible_ssh_user }}/openms/OpenMS-build/lib:$LD_LIBRARY_PATH\""
   - lineinfile: dest="/home/{{ ansible_ssh_user }}/.bashrc" line="export PATH=$PATH:/home/{{ ansible_ssh_user }}/openms/OpenMS-build/bin"
 # Activate in Proteios if existing
