@@ -68,8 +68,12 @@
     become: yes
     become_method: sudo
     file: path=/home/proteios state=directory owner=tomcat7
-    file: path=/home/proteios/files state=directory owner=tomcat7
-    file: path=/home/proteios/tmp state=directory owner=tomcat7 
+  - file: path=/home/proteios/files state=directory owner=tomcat7
+    become: yes
+    become_method: sudo
+  - file: path=/home/proteios/tmp state=directory owner=tomcat7 
+    become: yes
+    become_method: sudo  
   - name: Build Proteios
     command: ant package chdir=/home/{{ ansible_ssh_user }}/proteios
   - name: Configure Proteios

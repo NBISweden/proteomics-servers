@@ -18,6 +18,8 @@
     copy: src=/home/{{ ansible_ssh_user }}/msgfplus/MSGFPlus_Mods1.txt dest=/home/proteios/ mode=u+r owner=tomcat7 remote_src=True
     become: yes
   - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/msgfplus.properties regexp="^msgfplus\.local\.disabled = yes" replace="msgfplus.local.disabled = no"
+    become: yes
+    become_method: sudo 
   - replace:  dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/msgfplus.properties regexp="^msgfplus\.local\.program\.name = MSGFplus\.jar" replace="msgfplus.local.program.name = MSGFPlus.jar"
     become: yes
     become_method: sudo

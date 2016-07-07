@@ -1,6 +1,6 @@
 # Ansible scripts for installing Proteios SE on Ubuntu 14.04 server
 
-The scripts in this folder can be used to install the latest version of Proteios Software Environment on a fresh Ubuntu server. Note that you'll need all files in the folder.
+The scripts in this folder can be used to install the latest version of Proteios Software Environment on a fresh Ubuntu server. Note that you'll need all files in the folder. It is recommended to change the Proteios root password when you are done with the installation.
 
 ##Instructions 
 First test ssh login to server (Ubuntu 14.04 LTS) using your certificate to check that you can access the server. Make sure that TCP ports 8080 (for http access to Proteios), and
