@@ -3,11 +3,15 @@
 - hosts: proteios
   tasks:
   - name: Download MSGFPlus bundle
-    get_url: url=https://omics.pnl.gov/sites/default/files/MSGFPlus.20160629.zip dest=/home/{{ ansible_ssh_user }}/MSGFPlus.20160629.zip
+    get_url: url=https://omics.pnl.gov/sites/default/files/MSGFPlus.20160629.zip dest=/home/{{ ansible_ssh_user }}/MSGFPlus.20160629.zip validate_certs=False
   - file: path=/home/{{ ansible_ssh_user }}/msgfplus/ state=directory
   - file: path=/home/databases/ state=directory owner=tomcat7 
     become: yes
     become_method: sudo
+  - name: install unzip
+    become: yes
+    become_method: sudo
+    apt: pkg=unzip
   - name: Unzip archive
     unarchive: src=/home/{{ ansible_ssh_user }}/MSGFPlus.20160629.zip dest=/home/{{ ansible_ssh_user }}/msgfplus/ copy=no
   - name: MSGFPlus jar
