@@ -1,0 +1,90 @@
+# Requires ansible 2.0 or later
+---
+- hosts: proteios
+  tasks:
+  - name: Download TPP bundle
+    get_url: url=http://downloads.sourceforge.net/project/sashimi/Trans-Proteomic%20Pipeline%20%28TPP%29/TPP%20v4.8%20%28philae%29%20rev%200/TPP_4.8.0-src.tgz dest="/home/{{ ansible_ssh_user }}/TPP_4.8.0-src.tgz"
+  - file: path="/home/{{ ansible_ssh_user }}/tpp/" state=directory
+  - name: Uncompress archive
+    unarchive: src="/home/{{ ansible_ssh_user }}/TPP_4.8.0-src.tgz" dest="/home/{{ ansible_ssh_user }}/tpp/" copy=no
+# Build dependencies
+  - name: Install g++
+    become: yes
+    become_method: sudo
+    apt: pkg=g++
+  - name: Install perl
+    become: yes
+    become_method: sudo
+    apt: pkg=perl
+  - name: Install apache2
+    become: yes
+    become_method: sudo
+    apt: pkg=apache2
+  - name: Install xsltproc
+    become: yes
+    become_method: sudo
+    apt: pkg=xsltproc 
+  - name: Install make
+    become: yes
+    become_method: sudo
+    apt: pkg=make
+  - name: Install zlib1g-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=zlib1g-dev 
+  - name: Install libgd2-dev 
+    become: yes
+    become_method: sudo
+    apt: pkg=libgd2-dev
+  - name: Install libpng-dev 
+    become: yes
+    become_method: sudo
+    apt: pkg=libpng-dev
+  - name: Install libbz2-dev
+    become: yes
+    become_method: sudo
+    apt: pkg=libbz2-dev
+# Install perl modules. 
+  - name: Install libperlio-gzip-perl
+    become: yes
+    become_method: sudo
+    apt: pkg=libperlio-gzip-perl
+  - name: Install libxml-parser-perl
+    become: yes
+    become_method: sudo
+    apt: pkg=libxml-parser-perl
+# Prepare directory to avoid sudo during make
+  - file: path="/usr/local/tpp" state=directory owner=ubuntu
+    become: yes
+    become_method: sudo
+# Now compile and install
+  - name: Compile TPP - please be patient! 
+    shell: make all chdir="/home/{{ ansible_ssh_user }}/tpp/TPP-4.8.0/trans_proteomic_pipeline/src"
+  - name: Install TPP
+    shell: make install chdir="/home/{{ ansible_ssh_user }}/tpp/TPP-4.8.0/trans_proteomic_pipeline/src"
+# configure apache2
+  - name: "Add port"
+    lineinfile: dest=/etc/apache2/ports.conf line="Listen 8090" insertbefore=BOF
+    become: yes
+    become_method: sudo
+# add conf file to sites enabled
+  - name: Configure apache2
+    copy: src=tpp.conf dest=/etc/apache2/sites-enabled/tpp.conf
+    become: yes
+    become_method: sudo 
+# a2enmod
+  - name: enabled mod_rewrite
+    apache2_module: name=rewrite state=present
+    become: yes
+    become_method: sudo
+  - name: restart apache2
+    service: name=apache2 state=restarted  
+    become: yes
+    become_method: sudo
+# create folder /ISB/data
+  - file: path="/ISB/data" state=directory owner=www-data
+    become: yes
+    become_method: sudo 
+
+
+
