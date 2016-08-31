@@ -5,4 +5,5 @@ This repository contains [Ansible](http://docs.ansible.com/ansible/intro_install
  - X!Tandem, MS-GF+ search engines 
  - dinosaur, msInspect feature detectors
 * OpenMS: Compilation and installation of OpenMS and TOPP.
+* TPP: Compilation and installation of Trans-Proteomic Pipeline.
 * DIA: Update of server packages, and installation of software for DIA targeted analysis 
