@@ -3,15 +3,18 @@
   tasks:
   - stat: path=/home/{{ ansible_ssh_user }}/srm-client-3.0.3
     register: srmclient
-  - name: Download SRM client
+  - name: Unarchive SRM client
     when: srmclient.stat.exists == False
-    get_url: url=http://webdav.swegrid.se/snic/bils/lu_proteomics/pub/server/gpm.tgz dest=/home/{{ ansible_ssh_user }}/srm-client-3.0.3.tar.gz
-  - name: Uncompress SRM Client archive
-    unarchive: src=/home/{{ ansible_ssh_user }}/srm-client-3.0.3.tar.gz dest=/home/{{ ansible_ssh_user }}/srm-client-3.0.3 copy=no
+    unarchive: src=https://www.dcache.org/downloads/1.9/repo/3.0/srm-client-3.0.3.tar.gz dest=/home/{{ ansible_ssh_user }} remote_src=Yes
+  - name: Create proxy script
     become: yes
     become_method: sudo
-    when: srmclient.stat.exists == False     
+    lineinfile: dest=/usr/share/tomcat7/create_proxy.sh create=yes owner=tomcat7 mode=u+x line="#!/bin/bash"
+  - name: Complete proxy script
+    become: yes
+    become_method: sudo
+    lineinfile: dest=/usr/share/tomcat7/create_proxy.sh line='arcproxy --passwordsource="key=file:/usr/share/tomcat7/.gridpw"'
   - name: Configure Proteios
     become: yes
     become_method: sudo
-    replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/connection.properties regexp="^srm\.set\.permissions = .*" replace="srm.set.permissions = /home/{{ ansible_ssh_user }}/srm-client-3.0.3/bin/srm-get-permissions"
+    replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/connection.properties regexp="^srm\.set\.permissions = .*" replace="srm.set.permissions = /home/{{ ansible_ssh_user }}/srm-client-3.0.3/bin/srm-get-permissions"   
