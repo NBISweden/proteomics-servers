@@ -17,4 +17,4 @@
   - name: Configure Proteios
     become: yes
     become_method: sudo
-    replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/connection.properties regexp="^srm\.set\.permissions = .*" replace="srm.set.permissions = /home/{{ ansible_ssh_user }}/srm-client-3.0.3/bin/srm-get-permissions"   
+    replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/connection.properties regexp="^srm\.set\.permissions = .*" replace="srm.set.permissions = /home/{{ ansible_ssh_user }}/srm-client-3.0.3/bin/srm-set-permissions"   
