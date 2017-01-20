@@ -1,0 +1,17 @@
+---
+- hosts: proteios
+  tasks:
+  - stat: path=/home/{{ ansible_ssh_user }}/srm-client-3.0.3
+    register: srmclient
+  - name: Download SRM client
+    when: srmclient.stat.exists == False
+    get_url: url=http://webdav.swegrid.se/snic/bils/lu_proteomics/pub/server/gpm.tgz dest=/home/{{ ansible_ssh_user }}/srm-client-3.0.3.tar.gz
+  - name: Uncompress SRM Client archive
+    unarchive: src=/home/{{ ansible_ssh_user }}/srm-client-3.0.3.tar.gz dest=/home/{{ ansible_ssh_user }}/srm-client-3.0.3 copy=no
+    become: yes
+    become_method: sudo
+    when: srmclient.stat.exists == False     
+  - name: Configure Proteios
+    become: yes
+    become_method: sudo
+    replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/connection.properties regexp="^srm\.set\.permissions = .*" replace="srm.set.permissions = /home/{{ ansible_ssh_user }}/srm-client-3.0.3/bin/srm-get-permissions"
