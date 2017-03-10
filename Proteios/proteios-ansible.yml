@@ -106,6 +106,12 @@
     script: update.expect
     become: yes
     become_method: sudo
+  - name: Install library export
+    command: ant chdir=/home/{{ ansible_ssh_user }}/proteios/contrib/SpectrumLibraryExport
+    environment:
+        CATALINA_BASE: /var/lib/tomcat7
+    become: yes
+    become_method: sudo
   - name: Configure tomcat memory
     become: yes
     become_method: sudo
