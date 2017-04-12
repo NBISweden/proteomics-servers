@@ -32,7 +32,7 @@
     become_method: sudo
     when: serverfolders.stat.exists == False     
   - name: Configure apache2
-    copy: src=/home/bils/tandem_apache.conf dest=/etc/apache2/sites-enabled/tandem.conf
+    copy: src=tandem_apache.conf dest=/etc/apache2/sites-enabled/tandem.conf
     become: yes
     become_method: sudo 
   - name: Remove default

@@ -28,10 +28,10 @@
         delay=1
         timeout=300
 
-  - name: ensure jdk 7 is installed
+  - name: ensure jdk 8 is installed
     become: yes
     become_method: sudo
-    apt: pkg=openjdk-7-jdk state=latest
+    apt: pkg=openjdk-8-jdk state=latest
   - name: install expect
     become: yes
     become_method: sudo
