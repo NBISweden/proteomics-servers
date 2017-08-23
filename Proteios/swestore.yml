@@ -1,11 +1,11 @@
 ---
 - hosts: proteios
   tasks:
-  - stat: path=/home/{{ ansible_ssh_user }}/srm-client-3.0.3
+  - stat: path=/home/{{ ansible_ssh_user }}/srm-client-3.0.27
     register: srmclient
   - name: Unarchive SRM client
     when: srmclient.stat.exists == False
-    unarchive: src=https://www.dcache.org/downloads/1.9/repo/3.0/srm-client-3.0.3.tar.gz dest=/home/{{ ansible_ssh_user }} remote_src=Yes
+    unarchive: src=https://www.dcache.org/downloads/1.9/repo/3.0/srm-client-3.0.27.tar.gz dest=/home/{{ ansible_ssh_user }} remote_src=Yes
   - name: Create proxy script
     become: yes
     become_method: sudo
@@ -17,4 +17,8 @@
   - name: Configure Proteios
     become: yes
     become_method: sudo
-    replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/connection.properties regexp="^srm\.set\.permissions = .*" replace="srm.set.permissions = /home/{{ ansible_ssh_user }}/srm-client-3.0.3/bin/srm-set-permissions"   
+    replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/connection.properties regexp="^srm\.set\.permissions = .*" replace="srm.set.permissions = /home/{{ ansible_ssh_user }}/srm-client-3.0.27/bin/srm-set-permissions"
+    
+    #TODO: Install CA certs as described for Debian here: https://wiki.egi.eu/wiki/EGI_IGTF_Release
+    #TODO: Upload usercert.pem and userkey.pem to /usr/share/tomcat7/.arc
+    #TODO: write cert password in user only file .gridpw
