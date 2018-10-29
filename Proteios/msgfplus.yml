@@ -3,9 +3,9 @@
 - hosts: proteios
   tasks:
   - name: Download MSGFPlus bundle
-    get_url: url=https://omics.pnl.gov/sites/default/files/MSGFPlus.zip dest=/home/{{ ansible_ssh_user }}/MSGFPlus.zip validate_certs=False
+    get_url: url=https://github.com/MSGFPlus/msgfplus/releases/download/v2018.10.15/MSGFPlus_v20181015.zip dest=/home/{{ ansible_ssh_user }}/MSGFPlus.zip validate_certs=False
   - file: path=/home/{{ ansible_ssh_user }}/msgfplus/ state=directory
-  - file: path=/home/databases/ state=directory owner=tomcat7 
+  - file: path=/home/databases/ state=directory owner=tomcat8 
     become: yes
     become_method: sudo
   - name: install unzip
@@ -17,14 +17,14 @@
   - name: MSGFPlus jar
     become: yes
     become_method: sudo
-    copy: src=/home/{{ ansible_ssh_user }}/msgfplus/MSGFPlus.jar dest=/home/proteios/ mode=u+rx owner=tomcat7 remote_src=True
+    copy: src=/home/{{ ansible_ssh_user }}/msgfplus/MSGFPlus.jar dest=/home/proteios/ mode=u+rx owner=tomcat8 remote_src=True
   - name: Default modification file
-    copy: src=/home/{{ ansible_ssh_user }}/msgfplus/MSGFPlus_Mods1.txt dest=/home/proteios/ mode=u+r owner=tomcat7 remote_src=True
+    copy: src=/home/{{ ansible_ssh_user }}/msgfplus/MSGFPlus_Mods1.txt dest=/home/proteios/ mode=u+r owner=tomcat8 remote_src=True
     become: yes
-  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/msgfplus.properties regexp="^msgfplus\.local\.disabled = yes" replace="msgfplus.local.disabled = no"
+  - replace: dest=/var/lib/tomcat8/webapps/proteios/WEB-INF/classes/msgfplus.properties regexp="^msgfplus\.local\.disabled = yes" replace="msgfplus.local.disabled = no"
     become: yes
     become_method: sudo 
-  - replace:  dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/msgfplus.properties regexp="^msgfplus\.local\.program\.name = MSGFplus\.jar" replace="msgfplus.local.program.name = MSGFPlus.jar"
+  - replace:  dest=/var/lib/tomcat8/webapps/proteios/WEB-INF/classes/msgfplus.properties regexp="^msgfplus\.local\.program\.name = MSGFplus\.jar" replace="msgfplus.local.program.name = MSGFPlus.jar"
     become: yes
     become_method: sudo
 

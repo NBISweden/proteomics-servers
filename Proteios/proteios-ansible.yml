@@ -3,31 +3,6 @@
   vars:
    mysql_root_pass: testing
   tasks:
-  - name: upgrade
-    become: yes
-    become_method: sudo
-    apt: upgrade=dist update_cache=yes
-  - name: "Check hosts file"
-    lineinfile: dest=/etc/hosts line="{{ ansible_default_ipv4.address }} {{ ansible_hostname }} localhost" state=present
-    when: ansible_default_ipv4.address is defined
-    become: yes
-    become_method: sudo
-  - name: Check if a reboot is required
-    register: file
-    stat: path=/var/run/reboot-required get_md5=no
-  - name: Reboot the server
-    command: /sbin/reboot
-    become: yes
-    become_method: sudo
-    when: file.stat.exists == true
-  - name: Wait for server to restart
-    local_action:
-      module: wait_for
-        host={{ inventory_hostname }}
-        port=22
-        delay=1
-        timeout=300
-
   - name: ensure jdk 8 is installed
     become: yes
     become_method: sudo
@@ -36,10 +11,10 @@
     become: yes
     become_method: sudo
     apt: pkg=expect
-  - name: install tomcat7
+  - name: install tomcat8
     become: yes
     become_method: sudo
-    apt: pkg=tomcat7 state=latest
+    apt: pkg=tomcat8 state=latest
   - name: install subversion
     become: yes
     become_method: sudo
@@ -67,23 +42,25 @@
   - name: Assures Proteios dirs exists
     become: yes
     become_method: sudo
-    file: path=/home/proteios state=directory owner=tomcat7
-  - file: path=/home/proteios/files state=directory owner=tomcat7
+    file: path=/home/proteios state=directory owner=tomcat8
+  - file: path=/home/proteios/files state=directory owner=tomcat8
     become: yes
     become_method: sudo
-  - file: path=/home/proteios/tmp state=directory owner=tomcat7 
+  - file: path=/home/proteios/tmp state=directory owner=tomcat8 
     become: yes
     become_method: sudo  
   - name: Build Proteios
     command: ant package chdir=/home/{{ ansible_ssh_user }}/proteios
   - name: Configure Proteios
-    replace: dest=/home/{{ ansible_ssh_user }}/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=tomcat6 replace=tomcat7
+    replace: dest=/home/{{ ansible_ssh_user }}/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=tomcat6 replace=tomcat8
   - replace: dest=/home/{{ ansible_ssh_user }}/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=/var/proteios/files replace=/home/proteios/files
   - replace: dest=/home/{{ ansible_ssh_user }}/proteios/dist/ProteiosSE-2.20.0-dev/www/WEB-INF/config regexp=/tmp/proteios replace=/home/proteios/tmp
-  - stat: path=/var/lib/tomcat7/webapps/proteios
+  - stat: path=/var/lib/tomcat8/webapps/proteios
     register: proteios_installation_exists
   - name: New Proteios install
     command: ./install.sh
+    environment:
+        CATALINA_BASE: /var/lib/tomcat8
     when: proteios_installation_exists.stat.exists == False
     become: yes
     become_method: sudo
@@ -91,6 +68,8 @@
       chdir: /home/{{ ansible_ssh_user }}/proteios/dist/ProteiosSE-2.20.0-dev/
   - name: Proteios installation update
     command: ./install.sh --force
+    environment:
+        CATALINA_BASE: /var/lib/tomcat8
     become: yes
     become_method: sudo
     when: proteios_installation_exists.stat.exists == True
@@ -109,14 +88,14 @@
   - name: Install library export
     command: ant chdir=/home/{{ ansible_ssh_user }}/proteios/contrib/SpectrumLibraryExport
     environment:
-        CATALINA_BASE: /var/lib/tomcat7
+        CATALINA_BASE: /var/lib/tomcat8
     become: yes
     become_method: sudo
-  - name: Configure tomcat memory
+  - name: Configure tomcat8 memory
     become: yes
     become_method: sudo
-    replace: dest=/etc/default/tomcat7 regexp=Xmx128m replace="Xmx3G -Djava.security.egd=file:/dev/./urandom" 
+    replace: dest=/etc/default/tomcat8 regexp="headless=true -XX" replace="headless=true -Xmx3G -Djava.security.egd=file:/dev/./urandom -XX"
   - name: Restart tomcat
     become: yes
     become_method: sudo
-    service: name=tomcat7 state=restarted 
+    service: name=tomcat8 state=restarted 

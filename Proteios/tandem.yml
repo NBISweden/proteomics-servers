@@ -39,8 +39,8 @@
     file: path=/etc/apache2/sites-enabled/000-default.conf state=absent
     become: yes
     become_method: sudo
-  - name: Enable cgi
-    apache2_module: state=present name=cgi
+  - name: Enable cgid
+    apache2_module: state=present name=cgid
     become: yes
     become_method: sudo
   - name: Restart apache
@@ -50,19 +50,19 @@
   - name: Configure Proteios
     become: yes
     become_method: sudo
-    replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/xtandem.properties regexp="^xtandem\.gpm\.server\.url = .*" replace="xtandem.gpm.server.url = http://localhost"
-  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/xtandem.properties regexp="^xtandem\.gpm\.result\.filename\.prefix = GPM777" replace="xtandem.gpm.result.filename.prefix = GPM"
+    replace: dest=/var/lib/tomcat8/webapps/proteios/WEB-INF/classes/xtandem.properties regexp="^xtandem\.gpm\.server\.url = .*" replace="xtandem.gpm.server.url = http://localhost"
+  - replace: dest=/var/lib/tomcat8/webapps/proteios/WEB-INF/classes/xtandem.properties regexp="^xtandem\.gpm\.result\.filename\.prefix = GPM777" replace="xtandem.gpm.result.filename.prefix = GPM"
     become: yes
     become_method: sudo    
-  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/xtandem.properties regexp="^xtandem\.gpm\.server\.timediff\.hours = -9" replace="xtandem.gpm.server.timediff.hours = 0"
+  - replace: dest=/var/lib/tomcat8/webapps/proteios/WEB-INF/classes/xtandem.properties regexp="^xtandem\.gpm\.server\.timediff\.hours = -9" replace="xtandem.gpm.server.timediff.hours = 0"
     become: yes
     become_method: sudo
-  - replace: dest=/var/lib/tomcat7/webapps/proteios/WEB-INF/classes/xtandem.properties regexp="^xtandem\.local\.disabled = yes" replace="xtandem.local.disabled = no"
+  - replace: dest=/var/lib/tomcat8/webapps/proteios/WEB-INF/classes/xtandem.properties regexp="^xtandem\.local\.disabled = yes" replace="xtandem.local.disabled = no"
     become: yes
     become_method: sudo
   - name: Restart tomcat
     become: yes
     become_method: sudo
-    service: name=tomcat7 state=restarted
+    service: name=tomcat8 state=restarted
     
 

@@ -1,5 +1,5 @@
 #!/usr/bin/expect
-cd /var/lib/tomcat7/webapps/proteios/WEB-INF/
+cd /var/lib/tomcat8/webapps/proteios/WEB-INF/
 spawn ./init.sh
 
 expect "Mysql password for user root: "

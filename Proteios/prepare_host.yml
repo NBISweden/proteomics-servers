@@ -1,0 +1,37 @@
+- hosts: all
+  gather_facts: False
+  
+  tasks:
+  - name: install python 2
+    become: yes
+    become_method: sudo
+    raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+  - name: upgrade
+    become: yes
+    become_method: sudo
+    apt: upgrade=dist update_cache=yes
+  - name: Gather facts
+    setup: gather_subset=network
+  - name: "Check hosts file"
+    lineinfile: dest=/etc/hosts line="{{ ansible_default_ipv4.address }} {{ ansible_hostname }} localhost" state=present
+    when: ansible_default_ipv4.address is defined
+    become: yes
+    become_method: sudo
+  - name: Check if a reboot is required
+    register: file
+    stat: path=/var/run/reboot-required get_md5=no
+  - name: Reboot and wait for server if needed
+    reboot:
+#  - name: Reboot the server
+#    command: /sbin/reboot
+#    become: yes
+#    become_method: sudo
+    when: file.stat.exists == true
+#  - name: Wait for server to restart
+#    local_action:
+#      module: wait_for
+#        host={{ inventory_hostname }}
+#        port=22
+#        delay=1
+#        timeout=300
+
